@@ -29,6 +29,30 @@ public class TransactionService {
         return repository.findByEmail(email);
     }
 
+    // Get By ID (ADDED)
+    public Transaction getById(Long id){
+        return repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Transaction not found"));
+    }
+
+    // Update Transaction
+    public Transaction update(Long id, Transaction transaction){
+
+        Transaction existing =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException("Transaction not found"));
+
+        existing.setTitle(transaction.getTitle());
+        existing.setAmount(transaction.getAmount());
+        existing.setType(transaction.getType());
+        existing.setCategory(transaction.getCategory());
+        existing.setEmail(transaction.getEmail());
+
+        return repository.save(existing);
+    }
+
     // Delete
     public void delete(Long id) {
         repository.deleteById(id);

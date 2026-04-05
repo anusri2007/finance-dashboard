@@ -10,6 +10,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,10 +32,12 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getRequestURI();
+        String path = request.getServletPath();
 
-        // Skip authentication for login & register
-        if (path.contains("/login") || path.contains("/register")) {
+        // Skip login & register
+        if (path.equals("/api/users/login") ||
+            path.equals("/api/users/register")) {
+
             filterChain.doFilter(request, response);
             return;
         }
@@ -44,9 +47,17 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = null;
         String username = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            username = jwtUtil.extractUsername(token);
+        try {
+
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+                username = jwtUtil.extractUsername(token);
+            }
+
+        } catch (ExpiredJwtException e) {
+            // Token expired → continue without authentication
+            filterChain.doFilter(request, response);
+            return;
         }
 
         if (username != null &&

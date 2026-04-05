@@ -32,10 +32,28 @@ public class TransactionController {
         return service.getByUser(auth.getName());
     }
 
+    // Get Transaction By ID (ADDED)
+    @GetMapping("/{id}")
+    public Transaction getById(@PathVariable Long id){
+        return service.getById(id);
+    }
+
+    // Update Transaction
+    @PutMapping("/{id}")
+    public Transaction update(
+            @PathVariable Long id,
+            @RequestBody Transaction transaction,
+            Authentication auth) {
+
+        transaction.setEmail(auth.getName());
+        return service.update(id, transaction);
+    }
+
     // Delete Transaction
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public String delete(@PathVariable Long id) {
         service.delete(id);
+        return "Transaction Deleted Successfully";
     }
 
     // Total Income
